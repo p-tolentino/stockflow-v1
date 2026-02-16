@@ -24,9 +24,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
-import { EditInventoryDialog } from "./edit-inventory-dialog";
 import { toast } from "sonner";
 import { getStockStatus, getStockStatusColor } from "@/lib/stock-utils";
+import { InventoryDialog } from "./inventory-form";
 
 interface InventoryItem {
   id: string;
@@ -120,8 +120,18 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
                 {item.reorder_level}
               </TableCell>
               <TableCell className="text-right">
-                <EditInventoryDialog
-                  item={item}
+                <InventoryDialog
+                  initialData={{
+                    id: item.id,
+                    name: item.name,
+                    description: item.description || "",
+                    category_id: item.category_id,
+                    supplier_id: item.supplier_id,
+                    unit: item.unit,
+                    current_quantity: item.current_quantity,
+                    reorder_level: item.reorder_level,
+                    unit_price: item.unit_price,
+                  }}
                   categories={items
                     .map((i) => ({
                       id: i.category_id!,
@@ -142,7 +152,7 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
-                </EditInventoryDialog>
+                </InventoryDialog>
 
                 <AlertDialog
                   open={deleteId === item.id}

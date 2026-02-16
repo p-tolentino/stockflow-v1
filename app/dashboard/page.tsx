@@ -1,3 +1,4 @@
+// app/dashboard/page.tsx
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -16,12 +17,27 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import {
+  format,
+  subDays,
+  subWeeks,
+  subMonths,
+  startOfWeek,
+  startOfMonth,
+} from "date-fns";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { InventoryValueChart, MovementBreakdownChart } from "./charts";
+import { IntervalSelector } from "./interval-selector";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ interval?: string }>;
+}) {
   const supabase = await createClient();
+  const params = await searchParams;
+  const interval = params.interval || "daily";
 
   const {
     data: { user },
@@ -29,18 +45,45 @@ export default async function DashboardPage() {
 
   if (!user) return null;
 
-  // Fetch all inventory items
+  // Calculate date range based on interval
+  let startDate = new Date();
+  let periodText = "";
+
+  switch (interval) {
+    case "weekly":
+      startDate = subWeeks(new Date(), 1);
+      periodText = "Last 7 Days";
+      break;
+    case "monthly":
+      startDate = subMonths(new Date(), 1);
+      periodText = "Last 30 Days";
+      break;
+    default: // daily
+      startDate = subDays(new Date(), 1);
+      periodText = "Today";
+  }
+
+  // Fetch all inventory items (current state)
   const { data: items } = await supabase
     .from("inventory_items")
     .select("*")
     .eq("user_id", user.id);
 
+  // Fetch items that existed during the period (for historical context)
+  const { data: historicalItems } = await supabase
+    .from("inventory_items")
+    .select("*")
+    .eq("user_id", user.id)
+    .lte("created_at", new Date().toISOString());
+
   const totalItems = items?.length || 0;
+
+  // Calculate low stock items (current state - always relevant)
   const lowStockItems =
     items?.filter((item) => item.current_quantity <= item.reorder_level) || [];
   const lowStockCount = lowStockItems.length;
 
-  // Check if any low stock item is critical (<= half of reorder level or <= 0)
+  // Check if any low stock item is critical
   const hasCriticalLow = lowStockItems.some(
     (item) =>
       item.current_quantity <= item.reorder_level * 0.5 ||
@@ -52,42 +95,188 @@ export default async function DashboardPage() {
       ? "low"
       : "normal";
 
-  // Calculate total inventory value
+  // Calculate total inventory value (current state)
   const totalValue =
     items?.reduce(
       (sum, item) => sum + item.current_quantity * (item.unit_price || 0),
       0,
     ) || 0;
 
-  // Fetch total movements count
-  const { count: movementsCount } = await supabase
+  // Fetch movements within the selected interval
+  const { data: intervalMovements } = await supabase
+    .from("stock_movements")
+    .select("*")
+    .eq("user_id", user.id)
+    .gte("created_at", startDate.toISOString());
+
+  const intervalMovementsCount = intervalMovements?.length || 0;
+
+  // Calculate value of goods moved during the interval
+  const intervalValueMoved =
+    intervalMovements?.reduce((sum, m) => {
+      const item = items?.find((i) => i.id === m.item_id);
+      const price = item?.unit_price || 0;
+      return sum + Math.abs(m.quantity_change) * price;
+    }, 0) || 0;
+
+  // Fetch total movements count (all time)
+  const { count: totalMovementsCount } = await supabase
     .from("stock_movements")
     .select("*", { count: "exact", head: true })
     .eq("user_id", user.id);
 
-  // Fetch recent movements (last 5)
+  // Fetch recent movements (last 5) for the table
   const { data: recentMovements } = await supabase
     .from("stock_movements")
     .select(
       `
-    created_at,
-    quantity_change,
-    movement_type,
-    item_id
-  `,
+      created_at,
+      quantity_change,
+      movement_type,
+      item_id,
+      inventory_items (
+        name
+      )
+    `,
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(5);
 
-  // Create a lookup map
+  // Create a lookup map for item names
   const itemMap = new Map(items?.map((item) => [item.id, item.name]));
+
+  // --- Prepare Chart Data ---
+
+  // 1. Movement breakdown data for pie chart (all time)
+  const { data: allMovements } = await supabase
+    .from("stock_movements")
+    .select("movement_type")
+    .eq("user_id", user.id);
+
+  const movementBreakdownData = [
+    {
+      type: "Stock In",
+      count: allMovements?.filter((m) => m.movement_type === "in").length || 0,
+      fill: "hsl(142.1 76.2% 36.3%)",
+    },
+    {
+      type: "Stock Out",
+      count: allMovements?.filter((m) => m.movement_type === "out").length || 0,
+      fill: "hsl(0 72.2% 50.6%)",
+    },
+    {
+      type: "Adjustment",
+      count:
+        allMovements?.filter((m) => m.movement_type === "adjustment").length ||
+        0,
+      fill: "hsl(47.9 95.8% 53.1%)",
+    },
+  ];
+
+  // 2. Inventory value trend data with interval support
+  let trendStartDate = new Date();
+  let groupFormat = "yyyy-MM-dd";
+  let numberOfPoints = 30;
+
+  switch (interval) {
+    case "weekly":
+      trendStartDate = subWeeks(new Date(), 12); // 12 weeks
+      groupFormat = "yyyy-'W'ww";
+      numberOfPoints = 12;
+      break;
+    case "monthly":
+      trendStartDate = subMonths(new Date(), 12); // 12 months
+      groupFormat = "yyyy-MM";
+      numberOfPoints = 12;
+      break;
+    default: // daily
+      trendStartDate = subDays(new Date(), 30); // 30 days
+      groupFormat = "yyyy-MM-dd";
+      numberOfPoints = 30;
+  }
+
+  const { data: valueHistory } = await supabase
+    .from("stock_movements")
+    .select(
+      `
+      created_at,
+      quantity_change,
+      item_id
+    `,
+    )
+    .eq("user_id", user.id)
+    .gte("created_at", trendStartDate.toISOString())
+    .order("created_at", { ascending: true });
+
+  // Create a map of item prices for quick lookup
+  const itemPriceMap = new Map(
+    items?.map((item) => [item.id, item.unit_price || 0]) || [],
+  );
+
+  // Group movements by interval and calculate net change
+  const intervalChanges = new Map();
+
+  valueHistory?.forEach((m) => {
+    const date = new Date(m.created_at);
+    let key: string;
+
+    switch (interval) {
+      case "weekly":
+        key = format(startOfWeek(date), "yyyy-'W'ww");
+        break;
+      case "monthly":
+        key = format(startOfMonth(date), "yyyy-MM");
+        break;
+      default:
+        key = format(date, "yyyy-MM-dd");
+    }
+
+    const price = itemPriceMap.get(m.item_id) || 0;
+    const valueChange = m.quantity_change * price;
+
+    const current = intervalChanges.get(key) || 0;
+    intervalChanges.set(key, current + valueChange);
+  });
+
+  // Build chart data with running total
+  const sortedIntervals = Array.from(intervalChanges.entries()).sort((a, b) =>
+    a[0].localeCompare(b[0]),
+  );
+
+  // Start with current total value and work backwards
+  let runningTotal = totalValue;
+  const chartData = [];
+
+  // Process from oldest to newest to build running total correctly
+  for (let i = 0; i < sortedIntervals.length; i++) {
+    const [interval_key, change] = sortedIntervals[i];
+
+    if (i === 0) {
+      // First interval: value = totalValue - sum of all changes after this interval
+      const laterChanges = sortedIntervals
+        .slice(i + 1)
+        .reduce((sum, [_, ch]) => sum + ch, 0);
+      runningTotal = totalValue - laterChanges;
+    } else {
+      // Subsequent intervals: add the change from previous interval
+      runningTotal = runningTotal + sortedIntervals[i - 1][1] * -1;
+    }
+
+    chartData.push({
+      date: interval_key,
+      value: Math.max(0, Math.round(runningTotal * 100) / 100),
+    });
+  }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-amber-900 dark:text-amber-100">
-        Dashboard
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-amber-900 dark:text-amber-100">
+          Dashboard
+        </h1>
+        <IntervalSelector interval={interval} />
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -101,6 +290,9 @@ export default async function DashboardPage() {
                 </p>
                 <p className="text-3xl font-bold mt-2 text-amber-900 dark:text-amber-100">
                   {totalItems}
+                </p>
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  Current inventory
                 </p>
               </div>
               <div className="p-3 bg-linear-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg shadow-amber-500/30">
@@ -137,6 +329,9 @@ export default async function DashboardPage() {
                 >
                   {lowStockCount}
                 </p>
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  Need attention
+                </p>
               </div>
               {lowStockCount === 0 ? (
                 <div className="p-3 bg-linear-to-br from-green-500 to-green-600 rounded-lg shadow-lg shadow-green-500/30">
@@ -166,7 +361,10 @@ export default async function DashboardPage() {
                   Stock Movements
                 </p>
                 <p className="text-3xl font-bold mt-2 text-amber-900 dark:text-amber-100">
-                  {movementsCount ?? 0}
+                  {intervalMovementsCount}
+                </p>
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  {periodText} • Total: {totalMovementsCount ?? 0} all time
                 </p>
               </div>
               <div className="p-3 bg-linear-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg shadow-amber-500/30">
@@ -179,9 +377,9 @@ export default async function DashboardPage() {
         {/* Inventory Value Card */}
         <Card
           className={`${
-            totalValue > 0
+            intervalValueMoved > 0
               ? "border-green-200 dark:border-green-800 bg-linear-to-br from-green-50 dark:from-green-950/50"
-              : totalValue < 0
+              : intervalValueMoved < 0
                 ? "border-red-200 dark:border-red-800 bg-linear-to-br from-red-50 dark:from-red-950/50"
                 : "border-amber-200 dark:border-amber-800 bg-linear-to-br from-amber-50 dark:from-amber-950/50"
           } to-white dark:to-slate-900 transition-all hover:shadow-lg hover:scale-[1.02]`}
@@ -190,25 +388,28 @@ export default async function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                  Inventory Value
+                  Value Moved
                 </p>
                 <p
                   className={`text-3xl font-bold mt-2 ${
-                    totalValue > 0
+                    intervalValueMoved > 0
                       ? "text-green-700 dark:text-green-400"
-                      : totalValue < 0
+                      : intervalValueMoved < 0
                         ? "text-red-700 dark:text-red-400"
                         : "text-amber-900 dark:text-amber-100"
                   }`}
                 >
-                  ${totalValue.toFixed(2)}
+                  ${intervalValueMoved.toFixed(2)}
+                </p>
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  {periodText} • Current: ${totalValue.toFixed(2)}
                 </p>
               </div>
               <div
                 className={`p-3 rounded-lg shadow-lg ${
-                  totalValue > 0
+                  intervalValueMoved > 0
                     ? "bg-linear-to-br from-green-500 to-green-600 shadow-green-500/30"
-                    : totalValue < 0
+                    : intervalValueMoved < 0
                       ? "bg-linear-to-br from-red-500 to-red-600 shadow-red-500/30"
                       : "bg-linear-to-br from-amber-500 to-orange-600 shadow-amber-500/30"
                 }`}
@@ -218,6 +419,19 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <InventoryValueChart
+          data={chartData}
+          title={`Inventory Value Trend (${interval.charAt(0).toUpperCase() + interval.slice(1)})`}
+          interval={interval}
+        />
+        <MovementBreakdownChart
+          data={movementBreakdownData}
+          title="Movement Breakdown (All Time)"
+        />
       </div>
 
       {/* Recent Stock Movements Table */}

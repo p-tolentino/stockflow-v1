@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { InventoryTable } from "@/components/inventory/inventory-table";
 import { InventoryTableSkeleton } from "@/components/inventory/inventory-table-skeleton";
-import { AddInventoryDialog } from "@/components/inventory/add-inventory-dialog";
+import { InventoryDialog } from "@/components/inventory/inventory-form";
 
 export default async function InventoryPage() {
   const supabase = await createClient();
@@ -31,14 +31,14 @@ export default async function InventoryPage() {
             Manage your restaurant inventory
           </p>
         </div>
-        <AddInventoryDialog
+        <InventoryDialog
           categories={categoriesRes.data || []}
           suppliers={suppliersRes.data || []}
         >
           <Button className="bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transition-all">
             <Plus className="mr-2 h-4 w-4" /> Add Item
           </Button>
-        </AddInventoryDialog>
+        </InventoryDialog>
       </div>
 
       <Suspense fallback={<InventoryTableSkeleton />}>

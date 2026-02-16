@@ -28,17 +28,20 @@ import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  description: z.string().optional(),
+  contact_person: z.string().optional().nullable(),
+  email: z.string().email("Invalid email address").optional().nullable(),
+  phone: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface CategoryDialogProps {
+interface SupplierDialogProps {
   children: React.ReactNode;
   initialData?: Partial<FormValues> & { id?: string };
 }
 
-export function CategoryDialog({ children, initialData }: CategoryDialogProps) {
+export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const supabase = createClient();
@@ -47,7 +50,10 @@ export function CategoryDialog({ children, initialData }: CategoryDialogProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialData?.name || "",
-      description: initialData?.description || "",
+      contact_person: initialData?.contact_person || "",
+      email: initialData?.email || "",
+      phone: initialData?.phone || "",
+      address: initialData?.address || "",
     },
   });
 
@@ -60,7 +66,7 @@ export function CategoryDialog({ children, initialData }: CategoryDialogProps) {
     if (initialData?.id) {
       // Update
       const { error } = await supabase
-        .from("categories")
+        .from("suppliers")
         .update({ ...values, updated_at: new Date().toISOString() })
         .eq("id", initialData.id);
       if (error) {
@@ -68,21 +74,21 @@ export function CategoryDialog({ children, initialData }: CategoryDialogProps) {
           description: error.message,
         });
       } else {
-        toast.success("Success", { description: "Category updated" });
+        toast.success("Success", { description: "Supplier updated" });
         setOpen(false);
         router.refresh();
       }
     } else {
       // Insert
       const { error } = await supabase
-        .from("categories")
+        .from("suppliers")
         .insert([{ ...values, user_id: user.id }]);
       if (error) {
         toast.error("Error", {
           description: error.message,
         });
       } else {
-        toast.success("Success", { description: "Category created" });
+        toast.success("Success", { description: "Supplier created" });
         setOpen(false);
         router.refresh();
       }
@@ -98,7 +104,7 @@ export function CategoryDialog({ children, initialData }: CategoryDialogProps) {
       >
         <DialogHeader>
           <DialogTitle className="text-amber-900 dark:text-amber-100">
-            {initialData?.id ? "Edit Category" : "Add Category"}
+            {initialData?.id ? "Edit Supplier" : "Add Supplier"}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -113,9 +119,11 @@ export function CategoryDialog({ children, initialData }: CategoryDialogProps) {
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g., Produce"
+                      placeholder="Acme Farms"
                       {...field}
+                      value={field.value || ""}
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                      required
                     />
                   </FormControl>
                   <FormMessage />
@@ -124,18 +132,83 @@ export function CategoryDialog({ children, initialData }: CategoryDialogProps) {
             />
             <FormField
               control={form.control}
-              name="description"
+              name="contact_person"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-amber-900 dark:text-amber-100">
-                    Description
+                    Contact Person
                   </FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Optional description"
+                    <Input
+                      placeholder="John Doe"
                       {...field}
                       value={field.value || ""}
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                      required
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-amber-900 dark:text-amber-100">
+                    Email
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="contact@acme.com"
+                      {...field}
+                      value={field.value || ""}
+                      className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                      required
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-amber-900 dark:text-amber-100">
+                    Phone
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="+63 234 567 8901"
+                      {...field}
+                      value={field.value || ""}
+                      className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                      required
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-amber-900 dark:text-amber-100">
+                    Address
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Street, city, etc."
+                      {...field}
+                      value={field.value || ""}
+                      className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                      required
                     />
                   </FormControl>
                   <FormMessage />
