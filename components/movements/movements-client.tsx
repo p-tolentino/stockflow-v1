@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { MovementsTable } from "@/components/movements/movements-table";
-import { AddMovementDialog } from "@/components/movements/add-movement-dialog";
+import { MovementDialog } from "@/components/movements/movement-form.tsx";
 import { MovementsFilter } from "@/components/movements/movements-filter";
 
 interface Movement {
@@ -41,11 +41,11 @@ export default function MovementsClient({
             Track all inventory changes and adjustments
           </p>
         </div>
-        <AddMovementDialog>
+        <MovementDialog>
           <Button className="bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transition-all">
             <Plus className="mr-2 h-4 w-4" /> Record Movement
           </Button>
-        </AddMovementDialog>
+        </MovementDialog>
       </div>
 
       <MovementsFilter

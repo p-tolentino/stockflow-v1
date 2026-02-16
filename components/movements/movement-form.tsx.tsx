@@ -55,7 +55,7 @@ interface AddMovementDialogProps {
   onSuccess?: () => void; // Add this prop
 }
 
-export function AddMovementDialog({
+export function MovementDialog({
   children,
   onSuccess,
 }: AddMovementDialogProps) {
