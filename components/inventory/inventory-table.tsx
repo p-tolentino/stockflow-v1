@@ -1,3 +1,4 @@
+// components/inventory/inventory-table.tsx
 "use client";
 
 import {
@@ -42,7 +43,19 @@ interface InventoryItem {
   suppliers: { name: string } | null;
 }
 
-export function InventoryTable({ items }: { items: InventoryItem[] }) {
+interface InventoryTableProps {
+  items: InventoryItem[];
+  onItemChange?: () => void;
+  categories: { id: string; name: string }[];
+  suppliers: { id: string; name: string }[];
+}
+
+export function InventoryTable({
+  items,
+  onItemChange,
+  categories,
+  suppliers,
+}: InventoryTableProps) {
   const router = useRouter();
   const supabase = createClient();
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -52,10 +65,15 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
       .from("inventory_items")
       .delete()
       .eq("id", id);
+
     if (error) {
       toast.error("Error", { description: error.message });
     } else {
       toast.success("Success", { description: "Item deleted" });
+      // Call the refresh callback if provided
+      if (onItemChange) {
+        onItemChange();
+      }
       router.refresh();
     }
     setDeleteId(null);
@@ -132,18 +150,9 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
                     reorder_level: item.reorder_level,
                     unit_price: item.unit_price,
                   }}
-                  categories={items
-                    .map((i) => ({
-                      id: i.category_id!,
-                      name: i.categories?.name || "",
-                    }))
-                    .filter((c) => c.id)}
-                  suppliers={items
-                    .map((i) => ({
-                      id: i.supplier_id!,
-                      name: i.suppliers?.name || "",
-                    }))
-                    .filter((s) => s.id)}
+                  categories={categories}
+                  suppliers={suppliers}
+                  onSuccess={onItemChange}
                 >
                   <Button
                     variant="ghost"

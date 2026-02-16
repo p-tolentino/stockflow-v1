@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useEffect } from "react";
 
 export const routes = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -35,6 +36,12 @@ export function Sidebar() {
     await supabase.auth.signOut();
     router.push("/login");
   };
+
+  useEffect(() => {
+    routes.forEach((route) => {
+      router.prefetch(route.href);
+    });
+  }, [router]);
 
   return (
     <div className="hidden md:flex md:w-64 w-full flex-col bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm border-r border-amber-200 dark:border-amber-800 h-full">

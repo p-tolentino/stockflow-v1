@@ -43,9 +43,10 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface InventoryDialogProps {
   children: React.ReactNode;
+  initialData?: Partial<FormValues> & { id?: string };
   categories: { id: string; name: string }[];
   suppliers: { id: string; name: string }[];
-  initialData?: Partial<FormValues> & { id?: string };
+  onSuccess?: () => void;
 }
 
 export function InventoryDialog({
@@ -53,6 +54,7 @@ export function InventoryDialog({
   categories,
   suppliers,
   initialData,
+  onSuccess,
 }: InventoryDialogProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -88,11 +90,11 @@ export function InventoryDialog({
         .update({ ...values, updated_at: new Date().toISOString() })
         .eq("id", initialData.id);
 
-      if (error) {
-        toast.error("Error", { description: error.message });
-      } else {
+      if (!error) {
         toast.success("Success", { description: "Item updated" });
         setOpen(false);
+        form.reset();
+        if (onSuccess) onSuccess();
         router.refresh();
       }
     } else {
@@ -101,11 +103,11 @@ export function InventoryDialog({
         .from("inventory_items")
         .insert([{ ...values, user_id: user.id }]);
 
-      if (error) {
-        toast.error("Error", { description: error.message });
-      } else {
+      if (!error) {
         toast.success("Success", { description: "Item created" });
         setOpen(false);
+        form.reset();
+        if (onSuccess) onSuccess();
         router.refresh();
       }
     }

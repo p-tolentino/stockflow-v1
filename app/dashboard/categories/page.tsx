@@ -1,8 +1,9 @@
+// app/dashboard/categories/page.tsx
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { CategoriesTable } from "@/components/categories/categories-table";
 import { CategoryDialog } from "@/components/categories/category-form";
+import { CategoriesSearch } from "@/components/categories/categories-search";
 
 export default async function CategoriesPage() {
   const supabase = await createClient();
@@ -20,10 +21,15 @@ export default async function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-amber-900 dark:text-amber-100">
-          Categories
-        </h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-amber-900 dark:text-amber-100">
+            Categories
+          </h1>
+          <p className="text-amber-700 dark:text-amber-300 mt-1">
+            Organize your inventory items by category
+          </p>
+        </div>
         <CategoryDialog>
           <Button className="bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transition-all">
             <Plus className="mr-2 h-4 w-4" /> Add Category
@@ -31,7 +37,7 @@ export default async function CategoriesPage() {
         </CategoryDialog>
       </div>
 
-      <CategoriesTable categories={categories || []} />
+      <CategoriesSearch categories={categories || []} />
     </div>
   );
 }

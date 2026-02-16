@@ -282,7 +282,7 @@ export default async function DashboardPage({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Items Card */}
         <Card className="border-amber-200 dark:border-amber-800 bg-linear-to-br from-amber-50 to-white dark:from-amber-950/50 dark:to-slate-900 transition-all hover:shadow-lg hover:scale-[1.02]">
-          <CardContent className="p-6">
+          <CardContent className="px-6 py-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
@@ -312,7 +312,7 @@ export default async function DashboardPage({
                 : "border-green-200 dark:border-green-800 bg-linear-to-br from-green-50 dark:from-green-950/50"
           } to-white dark:to-slate-900 transition-all hover:shadow-lg hover:scale-[1.02]`}
         >
-          <CardContent className="p-6">
+          <CardContent className="px-6 py-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
@@ -354,7 +354,7 @@ export default async function DashboardPage({
 
         {/* Stock Movements Card */}
         <Card className="border-amber-200 dark:border-amber-800 bg-linear-to-br from-amber-50 to-white dark:from-amber-950/50 dark:to-slate-900 transition-all hover:shadow-lg hover:scale-[1.02]">
-          <CardContent className="p-6">
+          <CardContent className="px-6 py-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
@@ -384,7 +384,7 @@ export default async function DashboardPage({
                 : "border-amber-200 dark:border-amber-800 bg-linear-to-br from-amber-50 dark:from-amber-950/50"
           } to-white dark:to-slate-900 transition-all hover:shadow-lg hover:scale-[1.02]`}
         >
-          <CardContent className="p-6">
+          <CardContent className="px-6 py-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">

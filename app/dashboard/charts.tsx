@@ -103,20 +103,19 @@ export function InventoryValueChart({ data, title, interval }: AreaChartProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="min-h-50 w-full">
+        <ChartContainer
+          config={chartConfig}
+          className="min-h-10 max-h-50 w-full"
+        >
           <AreaChart
             data={data}
             margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
           >
-            <CartesianGrid
-              vertical={false}
-              strokeDasharray="3 3"
-              stroke="hsl(var(--border))"
-            />
+            <CartesianGrid vertical={false} />
             <XAxis
               dataKey="date"
               tickLine={false}
-              tickMargin={8}
+              tickMargin={10}
               axisLine={false}
               tickFormatter={formatDate}
               interval="preserveStartEnd"
@@ -194,7 +193,10 @@ export function MovementBreakdownChart({ data, title }: PieChartProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="min-h-50 w-full">
+        <ChartContainer
+          config={chartConfig}
+          className="min-h-10 max-h-50 w-full"
+        >
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent />} />
             <Pie
