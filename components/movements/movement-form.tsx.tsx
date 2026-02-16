@@ -60,6 +60,7 @@ export function AddMovementDialog({
   onSuccess,
 }: AddMovementDialogProps) {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<
     { id: string; name: string; current_quantity: number; unit: string }[]
   >([]);
@@ -111,6 +112,7 @@ export function AddMovementDialog({
   }, [watchItemId, items]);
 
   const onSubmit = async (values: FormValues) => {
+    setLoading(true);
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -180,6 +182,7 @@ export function AddMovementDialog({
         router.refresh();
       }
     }
+    setLoading(false);
   };
 
   // Get icon based on movement type
@@ -243,7 +246,10 @@ export function AddMovementDialog({
                   </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20">
+                      <SelectTrigger
+                        className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                        disabled={loading}
+                      >
                         <SelectValue placeholder="Select an item" />
                       </SelectTrigger>
                     </FormControl>
@@ -279,7 +285,10 @@ export function AddMovementDialog({
                   </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20">
+                      <SelectTrigger
+                        className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                        disabled={loading}
+                      >
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                     </FormControl>
@@ -356,6 +365,7 @@ export function AddMovementDialog({
                                 ? "border-red-300 dark:border-red-700"
                                 : ""
                           }`}
+                          disabled={loading}
                         />
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-600 dark:text-amber-400">
                           {selectedItem?.unit || "qty"}
@@ -382,6 +392,7 @@ export function AddMovementDialog({
                       {...field}
                       value={field.value || ""}
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20 min-h-20"
+                      disabled={loading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -395,12 +406,14 @@ export function AddMovementDialog({
                 variant="outline"
                 onClick={() => setOpen(false)}
                 className="border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950 text-amber-700 dark:text-amber-300"
+                disabled={loading}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 className="bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/30"
+                disabled={loading}
               >
                 Record Movement
               </Button>

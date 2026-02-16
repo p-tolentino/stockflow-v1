@@ -24,6 +24,7 @@ interface CategoryComboboxProps {
   onChange: (value: string | null) => void;
   categories: { id: string; name: string }[];
   includeNone?: boolean;
+  disabled?: boolean;
 }
 
 export function CategoryCombobox({
@@ -31,10 +32,11 @@ export function CategoryCombobox({
   onChange,
   categories,
   includeNone = true,
+  disabled = false,
 }: CategoryComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(disabled);
 
   const selectedCategory = categories.find((cat) => cat.id === value);
 

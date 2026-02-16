@@ -24,6 +24,7 @@ interface SupplierComboboxProps {
   onChange: (value: string | null) => void;
   suppliers: { id: string; name: string }[];
   includeNone?: boolean;
+  disabled?: boolean;
 }
 
 export function SupplierCombobox({
@@ -31,10 +32,11 @@ export function SupplierCombobox({
   onChange,
   suppliers,
   includeNone = true,
+  disabled = false,
 }: SupplierComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(disabled);
 
   const selectedSupplier = suppliers.find((sup) => sup.id === value);
 

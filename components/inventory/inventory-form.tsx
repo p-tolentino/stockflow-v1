@@ -57,6 +57,7 @@ export function InventoryDialog({
   onSuccess,
 }: InventoryDialogProps) {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -75,6 +76,7 @@ export function InventoryDialog({
   });
 
   const onSubmit = async (values: FormValues) => {
+    setLoading(true);
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -111,6 +113,8 @@ export function InventoryDialog({
         router.refresh();
       }
     }
+
+    setLoading(false);
   };
 
   return (
@@ -140,6 +144,7 @@ export function InventoryDialog({
                       placeholder="Tomatoes"
                       {...field}
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                      disabled={loading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -160,6 +165,7 @@ export function InventoryDialog({
                       {...field}
                       value={field.value || ""}
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                      disabled={loading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -180,6 +186,7 @@ export function InventoryDialog({
                         value={field.value}
                         onChange={field.onChange}
                         categories={categories}
+                        disabled={loading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -221,6 +228,7 @@ export function InventoryDialog({
                         placeholder="kg"
                         {...field}
                         className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                        disabled={loading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -247,6 +255,7 @@ export function InventoryDialog({
                           )
                         }
                         className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                        disabled={loading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -270,6 +279,7 @@ export function InventoryDialog({
                           form.setValue("reorder_level", Number(e.target.value))
                         }
                         className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                        disabled={loading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -294,6 +304,7 @@ export function InventoryDialog({
                         form.setValue("unit_price", Number(e.target.value))
                       }
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                      disabled={loading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -306,12 +317,14 @@ export function InventoryDialog({
                 variant="outline"
                 onClick={() => setOpen(false)}
                 className="border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950"
+                disabled={loading}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 className="bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/30"
+                disabled={loading}
               >
                 {initialData?.id ? "Update" : "Create"}
               </Button>

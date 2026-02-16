@@ -43,6 +43,7 @@ interface SupplierDialogProps {
 
 export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -58,6 +59,7 @@ export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
   });
 
   const onSubmit = async (values: FormValues) => {
+    setLoading(true);
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -93,6 +95,7 @@ export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
         router.refresh();
       }
     }
+    setLoading(false);
   };
 
   return (
@@ -124,6 +127,7 @@ export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
                       value={field.value || ""}
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
                       required
+                      disabled={loading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -145,6 +149,7 @@ export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
                       value={field.value || ""}
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
                       required
+                      disabled={loading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -167,6 +172,7 @@ export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
                       value={field.value || ""}
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
                       required
+                      disabled={loading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -188,6 +194,7 @@ export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
                       value={field.value || ""}
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
                       required
+                      disabled={loading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -209,6 +216,7 @@ export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
                       value={field.value || ""}
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
                       required
+                      disabled={loading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -221,12 +229,14 @@ export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
                 variant="outline"
                 onClick={() => setOpen(false)}
                 className="border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950"
+                disabled={loading}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 className="bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/30"
+                disabled={loading}
               >
                 {initialData?.id ? "Update" : "Create"}
               </Button>
