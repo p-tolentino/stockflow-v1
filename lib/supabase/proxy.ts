@@ -35,6 +35,11 @@ export async function updateSession(request: NextRequest) {
     error,
   } = await supabase.auth.getUser();
 
+  if (error) {
+    console.log(error);
+    return null;
+  }
+
   // Define protected routes
   const protectedPaths = ["/dashboard", "/profile", "/settings"]; // Add your protected routes
   const isProtectedRoute = protectedPaths.some((path) =>

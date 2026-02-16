@@ -35,12 +35,20 @@ export default async function ReportsPage() {
       created_at,
       quantity_change,
       movement_type,
-      inventory_items ( name )
-    `,
+     item_id
+  `,
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(10);
+
+  const { data: items } = await supabase
+    .from("inventory_items")
+    .select("*")
+    .eq("user_id", user.id);
+
+  // Create a lookup map
+  const itemMap = new Map(items?.map((item) => [item.id, item.name]));
 
   return (
     <div className="space-y-6">
@@ -101,7 +109,7 @@ export default async function ReportsPage() {
                     <TableCell>
                       {format(new Date(movement.created_at), "PPp")}
                     </TableCell>
-                    <TableCell>{movement.inventory_items?.name}</TableCell>
+                    <TableCell>{itemMap.get(movement.item_id)}</TableCell>
                     <TableCell>
                       <Badge
                         variant={

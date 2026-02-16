@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, AlertTriangle, TrendingUp, DollarSign } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Package, AlertTriangle, Repeat, DollarSign } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -26,7 +26,7 @@ export default async function DashboardPage() {
   // Fetch all inventory items
   const { data: items } = await supabase
     .from("inventory_items")
-    .select("current_quantity, reorder_level, unit_price")
+    .select("*")
     .eq("user_id", user.id);
 
   const totalItems = items?.length || 0;
@@ -64,15 +64,18 @@ export default async function DashboardPage() {
     .from("stock_movements")
     .select(
       `
-      created_at,
-      quantity_change,
-      movement_type,
-      inventory_items (name)
-    `,
+    created_at,
+    quantity_change,
+    movement_type,
+    item_id
+  `,
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(5);
+
+  // Create a lookup map
+  const itemMap = new Map(items?.map((item) => [item.id, item.name]));
 
   return (
     <div className="space-y-6">
@@ -124,22 +127,28 @@ export default async function DashboardPage() {
                 <p className="text-sm text-gray-600">Stock Movements</p>
                 <p className="text-3xl font-bold mt-2">{movementsCount ?? 0}</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-gray-500" />
+              <Repeat className="h-8 w-8 text-gray-500" />
             </div>
           </CardContent>
         </Card>
 
         {/* Inventory Value Card */}
-        <Card className="border-green-200 bg-linear-to-br from-green-50 to-white animate-slide-up transition-all hover:shadow-lg hover:scale-[1.02]">
+        <Card
+          className={`${totalValue > 0 ? "border-green-200 bg-linear-to-br from-green-50" : "border-red-200 bg-linear-to-br from-red-50"} to-white animate-slide-up transition-all hover:shadow-lg hover:scale-[1.02]`}
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Inventory Value</p>
-                <p className="text-3xl font-bold text-secondary mt-2">
+                <p
+                  className={`text-3xl font-bold mt-2 ${totalValue > 0 ? "text-green-600" : "text-red-600"}`}
+                >
                   ${totalValue.toFixed(2)}
                 </p>
               </div>
-              <DollarSign className="h-8 w-8 text-green-500" />
+              <DollarSign
+                className={`h-8 w-8 ${totalValue > 0 ? "text-green-600" : "text-red-600"}`}
+              />
             </div>
           </CardContent>
         </Card>
@@ -170,7 +179,7 @@ export default async function DashboardPage() {
                     <TableCell>
                       {format(new Date(movement.created_at), "PPp")}
                     </TableCell>
-                    <TableCell>{movement.inventory_items?.name}</TableCell>
+                    <TableCell>{itemMap.get(movement.item_id)}</TableCell>
                     <TableCell>
                       <Badge
                         variant={

@@ -47,9 +47,10 @@ export function SupplierCombobox({
       onChange(newSupplier.id);
       setOpen(false);
       setSearch("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error("Error", {
-        description: error.message,
+        description:
+          error instanceof Error ? error.message : "An error occurred",
       });
     } finally {
       setLoading(false);
