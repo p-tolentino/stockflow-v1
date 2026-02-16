@@ -23,12 +23,19 @@ export default async function InventoryPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Inventory Items</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-amber-900 dark:text-amber-100">
+            Inventory Items
+          </h1>
+          <p className="text-sm text-amber-700/60 dark:text-amber-300/60 mt-1">
+            Manage your restaurant inventory
+          </p>
+        </div>
         <AddInventoryDialog
           categories={categoriesRes.data || []}
           suppliers={suppliersRes.data || []}
         >
-          <Button>
+          <Button className="bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transition-all">
             <Plus className="mr-2 h-4 w-4" /> Add Item
           </Button>
         </AddInventoryDialog>

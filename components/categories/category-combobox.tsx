@@ -70,14 +70,14 @@ export function CategoryCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="w-full justify-between border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
         >
           {value === null
             ? "None"
             : selectedCategory
               ? selectedCategory.name
               : "Select category..."}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50 text-amber-900 dark:text-amber-100" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-50 p-0">
@@ -86,16 +86,17 @@ export function CategoryCombobox({
             placeholder="Search category..."
             value={search}
             onValueChange={setSearch}
+            className="text-amber-900 dark:text-amber-100"
           />
           <CommandEmpty>
             {search.trim() ? (
               <Button
                 variant="ghost"
-                className="w-full justify-start"
+                className="w-full justify-start text-amber-900 dark:text-amber-100"
                 onClick={handleCreateCategory}
                 disabled={loading}
               >
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <PlusCircle className="mr-2 h-4 w-4 text-amber-900 dark:text-amber-100" />
                 Create &quot;{search}&quot;
               </Button>
             ) : (
@@ -111,10 +112,11 @@ export function CategoryCombobox({
                   onChange(item.id === "none" ? null : item.id);
                   setOpen(false);
                 }}
+                className="text-amber-900 dark:text-amber-100"
               >
                 <Check
                   className={cn(
-                    "mr-2 h-4 w-4",
+                    "mr-2 h-4 w-4 text-amber-900 dark:text-amber-100",
                     (item.id === "none" && value === null) || value === item.id
                       ? "opacity-100"
                       : "opacity-0",

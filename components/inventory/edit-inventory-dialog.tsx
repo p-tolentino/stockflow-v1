@@ -107,21 +107,27 @@ export function EditInventoryDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-125 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-125 max-h-[90vh] overflow-y-auto border-amber-200 dark:border-amber-800">
         <DialogHeader>
-          <DialogTitle>Edit Inventory Item</DialogTitle>
+          <DialogTitle className="text-amber-900 dark:text-amber-100">
+            Edit Inventory Item
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Same form fields as add dialog */}
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel className="text-amber-900 dark:text-amber-100">
+                    Name
+                  </FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input
+                      {...field}
+                      className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -132,9 +138,15 @@ export function EditInventoryDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel className="text-amber-900 dark:text-amber-100">
+                    Description
+                  </FormLabel>
                   <FormControl>
-                    <Textarea {...field} value={field.value || ""} />
+                    <Textarea
+                      {...field}
+                      value={field.value || ""}
+                      className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -146,7 +158,9 @@ export function EditInventoryDialog({
                 name="category_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel className="text-amber-900 dark:text-amber-100">
+                      Category
+                    </FormLabel>
                     <Select
                       onValueChange={(value) =>
                         field.onChange(value === "none" ? null : value)
@@ -154,11 +168,11 @@ export function EditInventoryDialog({
                       value={field.value === null ? "none" : field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="border-amber-200 dark:border-amber-800">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="border-amber-200 dark:border-amber-800">
                         <SelectItem value="none">None</SelectItem>
                         {categories.map((cat) => (
                           <SelectItem key={cat.id} value={cat.id}>
@@ -176,7 +190,9 @@ export function EditInventoryDialog({
                 name="supplier_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Supplier</FormLabel>
+                    <FormLabel className="text-amber-900 dark:text-amber-100">
+                      Supplier
+                    </FormLabel>
                     <Select
                       onValueChange={(value) =>
                         field.onChange(value === "none" ? null : value)
@@ -184,11 +200,11 @@ export function EditInventoryDialog({
                       value={field.value === null ? "none" : field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="border-amber-200 dark:border-amber-800">
                           <SelectValue placeholder="Select supplier" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="border-amber-200 dark:border-amber-800">
                         <SelectItem value="none">None</SelectItem>
                         {suppliers.map((sup) => (
                           <SelectItem key={sup.id} value={sup.id}>
@@ -208,9 +224,14 @@ export function EditInventoryDialog({
                 name="unit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Unit</FormLabel>
+                    <FormLabel className="text-amber-900 dark:text-amber-100">
+                      Unit
+                    </FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input
+                        {...field}
+                        className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -221,9 +242,16 @@ export function EditInventoryDialog({
                 name="current_quantity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Current Qty</FormLabel>
+                    <FormLabel className="text-amber-900 dark:text-amber-100">
+                      Current Qty
+                    </FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        {...field}
+                        className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -234,9 +262,16 @@ export function EditInventoryDialog({
                 name="reorder_level"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Reorder Level</FormLabel>
+                    <FormLabel className="text-amber-900 dark:text-amber-100">
+                      Reorder Level
+                    </FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        {...field}
+                        className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -248,23 +283,36 @@ export function EditInventoryDialog({
               name="unit_price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Unit Price ($)</FormLabel>
+                  <FormLabel className="text-amber-900 dark:text-amber-100">
+                    Unit Price ($)
+                  </FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" {...field} />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      {...field}
+                      className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 pt-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
+                className="border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950"
               >
                 Cancel
               </Button>
-              <Button type="submit">Update</Button>
+              <Button
+                type="submit"
+                className="bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/30"
+              >
+                Update
+              </Button>
             </div>
           </form>
         </Form>

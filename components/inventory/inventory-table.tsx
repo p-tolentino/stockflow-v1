@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash } from "lucide-react";
+import { Edit, Trash, Package } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -62,26 +62,51 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border border-amber-200 dark:border-amber-800 overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Supplier</TableHead>
-            <TableHead>Unit</TableHead>
-            <TableHead>Quantity</TableHead>
-            <TableHead>Reorder Level</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+          <TableRow className="bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-50/70 dark:hover:bg-amber-950/50 border-b border-amber-200 dark:border-amber-800">
+            <TableHead className="font-semibold text-amber-900 dark:text-amber-100">
+              Name
+            </TableHead>
+            <TableHead className="font-semibold text-amber-900 dark:text-amber-100">
+              Category
+            </TableHead>
+            <TableHead className="font-semibold text-amber-900 dark:text-amber-100">
+              Supplier
+            </TableHead>
+            <TableHead className="font-semibold text-amber-900 dark:text-amber-100">
+              Unit
+            </TableHead>
+            <TableHead className="font-semibold text-amber-900 dark:text-amber-100">
+              Quantity
+            </TableHead>
+            <TableHead className="font-semibold text-amber-900 dark:text-amber-100">
+              Reorder Level
+            </TableHead>
+            <TableHead className="text-right font-semibold text-amber-900 dark:text-amber-100">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell className="font-medium">{item.name}</TableCell>
-              <TableCell>{item.categories?.name || "-"}</TableCell>
-              <TableCell>{item.suppliers?.name || "-"}</TableCell>
-              <TableCell>{item.unit}</TableCell>
+            <TableRow
+              key={item.id}
+              className="hover:bg-amber-50/30 dark:hover:bg-amber-950/20 border-b border-amber-100 dark:border-amber-900/50"
+            >
+              <TableCell className="font-medium text-amber-900 dark:text-amber-100">
+                {item.name}
+              </TableCell>
+              <TableCell className="text-amber-800 dark:text-amber-300">
+                {item.categories?.name || "-"}
+              </TableCell>
+              <TableCell className="text-amber-800 dark:text-amber-300">
+                {item.suppliers?.name || "-"}
+              </TableCell>
+              <TableCell className="text-amber-800 dark:text-amber-300">
+                {item.unit}
+              </TableCell>
               <TableCell>
                 <span
                   className={getStockStatusColor(
@@ -91,7 +116,9 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
                   {item.current_quantity}
                 </span>
               </TableCell>
-              <TableCell>{item.reorder_level}</TableCell>
+              <TableCell className="text-amber-800 dark:text-amber-300">
+                {item.reorder_level}
+              </TableCell>
               <TableCell className="text-right">
                 <EditInventoryDialog
                   item={item}
@@ -100,7 +127,7 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
                       id: i.category_id!,
                       name: i.categories?.name || "",
                     }))
-                    .filter((c) => c.id)} // simplified; better to pass categories list from parent
+                    .filter((c) => c.id)}
                   suppliers={items
                     .map((i) => ({
                       id: i.supplier_id!,
@@ -108,7 +135,11 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
                     }))
                     .filter((s) => s.id)}
                 >
-                  <Button variant="ghost" size="icon">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hover:bg-amber-50 dark:hover:bg-amber-950 text-amber-700 dark:text-amber-300"
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
                 </EditInventoryDialog>
@@ -122,22 +153,32 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
                       variant="ghost"
                       size="icon"
                       onClick={() => setDeleteId(item.id)}
+                      className="hover:bg-red-50 dark:hover:bg-red-950 text-red-600 dark:text-red-400"
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent>
+                  <AlertDialogContent className="border-amber-200 dark:border-amber-800">
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone.
+                      <AlertDialogTitle className="text-amber-900 dark:text-amber-100">
+                        Are you sure?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="text-amber-700 dark:text-amber-300">
+                        This action cannot be undone. This will permanently
+                        delete &quot;{item.name}&quot; from your inventory.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setDeleteId(null)}>
+                      <AlertDialogCancel
+                        onClick={() => setDeleteId(null)}
+                        className="border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950"
+                      >
                         Cancel
                       </AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                      <AlertDialogAction
+                        onClick={() => handleDelete(item.id)}
+                        className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+                      >
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -148,11 +189,16 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
           ))}
           {items.length === 0 && (
             <TableRow>
-              <TableCell
-                colSpan={7}
-                className="text-center py-8 text-muted-foreground"
-              >
-                No items found.
+              <TableCell colSpan={7} className="text-center py-12">
+                <div className="flex flex-col items-center gap-3">
+                  <Package className="h-12 w-12 text-amber-300 dark:text-amber-700" />
+                  <p className="text-amber-700/70 dark:text-amber-300/70 font-medium">
+                    No items found.
+                  </p>
+                  <p className="text-sm text-amber-600/60 dark:text-amber-400/60">
+                    Add your first inventory item to get started
+                  </p>
+                </div>
               </TableCell>
             </TableRow>
           )}
