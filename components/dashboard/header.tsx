@@ -10,11 +10,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
 
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const [open, setOpen] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -23,7 +25,7 @@ export function Header() {
 
   return (
     <header className="flex h-16 items-center gap-4 border-b border-amber-200 dark:border-amber-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm px-4 lg:px-6 sticky top-0 z-50 shadow-sm">
-      <Sheet>
+      <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button
             variant="ghost"
@@ -64,6 +66,7 @@ export function Header() {
                         ? "bg-linear-to-r from-amber-500 to-orange-600 text-white shadow-md"
                         : "text-amber-900/70 dark:text-amber-100/70 hover:bg-amber-50 dark:hover:bg-amber-950 hover:text-amber-900 dark:hover:text-amber-100",
                     )}
+                    onClick={() => setOpen(false)}
                   >
                     <Icon className="h-4 w-4" />
                     {route.name}
@@ -90,7 +93,7 @@ export function Header() {
       <div className="flex items-center gap-2 md:hidden">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/30">
           <span className="text-lg text-background">
-            <Utensils />
+            <Utensils className="h-5 w-5 text-white" />
           </span>
         </div>
         <h1 className="text-lg font-bold text-amber-900 dark:text-amber-100">
