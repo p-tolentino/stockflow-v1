@@ -23,10 +23,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { CategoryCombobox } from "../categories/category-combobox";
 import { SupplierCombobox } from "../suppliers/supplier-combobox";
+import { createInventoryItem, updateInventoryItem } from "@/actions/inventory";
+import { useInventoryItems } from "@/hooks/useInventory";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -59,7 +60,7 @@ export function InventoryDialog({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  const { refetch } = useInventoryItems();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -77,41 +78,37 @@ export function InventoryDialog({
 
   const onSubmit = async (values: FormValues) => {
     setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error("Error", { description: "Not authenticated" });
-      return;
-    }
 
+    let result;
     if (initialData?.id) {
       // Update
-      const { error } = await supabase
-        .from("inventory_items")
-        .update({ ...values, updated_at: new Date().toISOString() })
-        .eq("id", initialData.id);
+      result = await updateInventoryItem(initialData.id, values);
+    } else {
+      // Create
+      result = await createInventoryItem(values);
+    }
 
-      if (!error) {
-        toast.success("Success", { description: "Item updated" });
-        setOpen(false);
-        form.reset();
-        if (onSuccess) onSuccess();
-        router.refresh();
+    if (result.success) {
+      toast.success("Success", {
+        description: initialData?.id ? "Item updated" : "Item created",
+      });
+      setOpen(false);
+      form.reset();
+
+      // Refresh SWR cache
+      await refetch();
+
+      // Refresh the server component
+      router.refresh();
+
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
       }
     } else {
-      // Insert
-      const { error } = await supabase
-        .from("inventory_items")
-        .insert([{ ...values, user_id: user.id }]);
-
-      if (!error) {
-        toast.success("Success", { description: "Item created" });
-        setOpen(false);
-        form.reset();
-        if (onSuccess) onSuccess();
-        router.refresh();
-      }
+      toast.error("Error", {
+        description: result.error,
+      });
     }
 
     setLoading(false);
@@ -145,6 +142,7 @@ export function InventoryDialog({
                       {...field}
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
                       disabled={loading}
+                      required
                     />
                   </FormControl>
                   <FormMessage />
@@ -229,6 +227,7 @@ export function InventoryDialog({
                         {...field}
                         className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
                         disabled={loading}
+                        required
                       />
                     </FormControl>
                     <FormMessage />
@@ -256,6 +255,7 @@ export function InventoryDialog({
                         }
                         className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
                         disabled={loading}
+                        required
                       />
                     </FormControl>
                     <FormMessage />
@@ -280,6 +280,7 @@ export function InventoryDialog({
                         }
                         className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
                         disabled={loading}
+                        required
                       />
                     </FormControl>
                     <FormMessage />
@@ -305,6 +306,7 @@ export function InventoryDialog({
                       }
                       className="border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20"
                       disabled={loading}
+                      required
                     />
                   </FormControl>
                   <FormMessage />

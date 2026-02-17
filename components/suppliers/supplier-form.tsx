@@ -23,7 +23,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { createClient } from "@/lib/supabase/client";
+import { createSupplier, updateSupplier } from "@/actions/suppliers";
+import { useSuppliers } from "@/hooks/useSuppliers";
 import { toast } from "sonner";
 
 const formSchema = z.object({
@@ -45,7 +46,7 @@ export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  const { refetch } = useSuppliers();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -60,41 +61,34 @@ export function SupplierDialog({ children, initialData }: SupplierDialogProps) {
 
   const onSubmit = async (values: FormValues) => {
     setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
 
+    let result;
     if (initialData?.id) {
       // Update
-      const { error } = await supabase
-        .from("suppliers")
-        .update({ ...values, updated_at: new Date().toISOString() })
-        .eq("id", initialData.id);
-      if (error) {
-        toast.error("Error", {
-          description: error.message,
-        });
-      } else {
-        toast.success("Success", { description: "Supplier updated" });
-        setOpen(false);
-        router.refresh();
-      }
+      result = await updateSupplier(initialData.id, values);
     } else {
-      // Insert
-      const { error } = await supabase
-        .from("suppliers")
-        .insert([{ ...values, user_id: user.id }]);
-      if (error) {
-        toast.error("Error", {
-          description: error.message,
-        });
-      } else {
-        toast.success("Success", { description: "Supplier created" });
-        setOpen(false);
-        router.refresh();
-      }
+      // Create
+      result = await createSupplier(values);
     }
+
+    if (result.success) {
+      toast.success("Success", {
+        description: initialData?.id ? "Supplier updated" : "Supplier created",
+      });
+      setOpen(false);
+      form.reset();
+
+      // Refresh SWR cache
+      await refetch();
+
+      // Refresh Next.js router cache
+      router.refresh();
+    } else {
+      toast.error("Error", {
+        description: result.error,
+      });
+    }
+
     setLoading(false);
   };
 

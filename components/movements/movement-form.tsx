@@ -30,7 +30,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import {
   Package,
@@ -38,6 +37,12 @@ import {
   ArrowUpCircle,
   RefreshCw,
 } from "lucide-react";
+import {
+  getItems,
+  getItemDetails,
+  recordMovement,
+  type MovementFormData,
+} from "@/actions/movements";
 
 const formSchema = z.object({
   item_id: z.string().min(1, "Item is required"),
@@ -50,15 +55,12 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface AddMovementDialogProps {
+interface MovementDialogProps {
   children: React.ReactNode;
-  onSuccess?: () => void; // Add this prop
+  onSuccess?: () => void;
 }
 
-export function MovementDialog({
-  children,
-  onSuccess,
-}: AddMovementDialogProps) {
+export function MovementDialog({ children, onSuccess }: MovementDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<
@@ -70,7 +72,6 @@ export function MovementDialog({
     unit: string;
   } | null>(null);
   const router = useRouter();
-  const supabase = createClient();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -86,102 +87,63 @@ export function MovementDialog({
   const watchItemId = form.watch("item_id");
   const watchMovementType = form.watch("movement_type");
 
+  // Fetch items when dialog opens
   useEffect(() => {
     const fetchItems = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase
-        .from("inventory_items")
-        .select("id, name, current_quantity, unit")
-        .eq("user_id", user.id)
-        .order("name");
-      setItems(data || []);
+      const result = await getItems();
+      if (result.error) {
+        toast.error("Error", { description: result.error });
+      } else if (result.data) {
+        setItems(result.data);
+      }
     };
-    if (open) fetchItems();
-  }, [open, supabase]);
 
-  useEffect(() => {
-    if (watchItemId) {
-      const item = items.find((i) => i.id === watchItemId);
-      setSelectedItem(item || null);
-    } else {
-      setSelectedItem(null);
+    if (open) {
+      fetchItems();
     }
-  }, [watchItemId, items]);
+  }, [open]);
+
+  // Fetch item details when item selection changes
+  useEffect(() => {
+    const fetchItemDetails = async () => {
+      if (watchItemId) {
+        const result = await getItemDetails(watchItemId);
+        if (result.error) {
+          toast.error("Error", { description: result.error });
+        } else {
+          setSelectedItem(result.data);
+        }
+      } else {
+        setSelectedItem(null);
+      }
+    };
+
+    if (watchItemId) {
+      fetchItemDetails();
+    }
+  }, [watchItemId]);
 
   const onSubmit = async (values: FormValues) => {
     setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error("Error", { description: "Not authenticated" });
-      return;
-    }
 
-    // Adjust sign for "out" movements
-    let quantityChange = values.quantity_change;
-    if (values.movement_type === "out") {
-      quantityChange = -Math.abs(quantityChange);
-    } else if (values.movement_type === "in") {
-      quantityChange = Math.abs(quantityChange);
-    }
+    const result = await recordMovement(values);
 
-    // Check if enough stock for out movements
-    if (values.movement_type === "out" && selectedItem) {
-      const requestedQty = Math.abs(values.quantity_change);
-      if (requestedQty > selectedItem.current_quantity) {
-        toast.error("Insufficient Stock", {
-          description: `Only ${selectedItem.current_quantity} ${selectedItem.unit} available`,
-        });
-        return;
-      }
-    }
-
-    // Insert movement
-    const { error } = await supabase.from("stock_movements").insert([
-      {
-        item_id: values.item_id,
-        quantity_change: quantityChange,
-        movement_type: values.movement_type,
-        notes: values.notes,
-        user_id: user.id,
-      },
-    ]);
-
-    if (error) {
-      toast.error("Error", {
-        description: error.message,
+    if (result.success) {
+      toast.success("Success", {
+        description: "Movement recorded successfully",
       });
-    } else {
-      // Update item quantity using RPC
-      const { error: updateError } = await supabase.rpc(
-        "update_item_quantity",
-        {
-          item_id: values.item_id,
-          change: quantityChange,
-        },
-      );
-
-      if (updateError) {
-        toast.error("Error", {
-          description: updateError.message,
-        });
-      } else {
-        toast.success("Success", {
-          description: "Movement recorded successfully",
-        });
-        setOpen(false);
-        form.reset();
-        // Call onSuccess callback if provided
-        if (onSuccess) {
-          onSuccess();
-        }
-        router.refresh();
+      router.refresh();
+      setOpen(false);
+      form.reset();
+      if (onSuccess) {
+        onSuccess();
       }
+    } else {
+      toast.error("Error", {
+        description: result.error,
+      });
     }
+
     setLoading(false);
   };
 
@@ -358,7 +320,7 @@ export function MovementDialog({
                               Number(e.target.value),
                             )
                           }
-                          className={`border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20 pl-8 ${
+                          className={`border-amber-200 dark:border-amber-800 focus:border-amber-500 dark:focus:border-amber-500 focus:ring-amber-500/20 ${
                             watchMovementType === "in"
                               ? "border-green-300 dark:border-green-700"
                               : watchMovementType === "out"
@@ -367,8 +329,8 @@ export function MovementDialog({
                           }`}
                           disabled={loading}
                         />
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-600 dark:text-amber-400">
-                          {selectedItem?.unit || "qty"}
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-600 dark:text-amber-400">
+                          {selectedItem?.unit || "unit(s)"}
                         </span>
                       </div>
                     </FormControl>

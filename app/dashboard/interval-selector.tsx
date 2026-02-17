@@ -25,7 +25,7 @@ export function IntervalSelector({ interval }: IntervalSelectorProps) {
   };
 
   return (
-    <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-950/50 rounded-lg p-1 border border-amber-200 dark:border-amber-800">
+    <div className="flex items-center justify-between gap-1 bg-amber-50 dark:bg-amber-950/50 rounded-lg p-1 border border-amber-200 dark:border-amber-800">
       {intervals.map(({ value, label, icon: Icon }) => (
         <button
           key={value}

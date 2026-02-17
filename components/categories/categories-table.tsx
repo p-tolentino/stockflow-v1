@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash, Tags } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import {
   AlertDialog,
@@ -26,6 +25,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { CategoryDialog } from "./category-form";
+import { deleteCategory } from "@/actions/categories";
 
 interface Category {
   id: string;
@@ -35,14 +35,13 @@ interface Category {
 
 export function CategoriesTable({ categories }: { categories: Category[] }) {
   const router = useRouter();
-  const supabase = createClient();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("categories").delete().eq("id", id);
+    const { error } = await deleteCategory(id);
     if (error) {
       toast.error("Error", {
-        description: error.message,
+        description: error,
       });
     } else {
       toast.success("Success", { description: "Category deleted" });
@@ -135,7 +134,7 @@ export function CategoriesTable({ categories }: { categories: Category[] }) {
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => handleDelete(category.id)}
-                        className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+                        className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white"
                       >
                         Delete
                       </AlertDialogAction>

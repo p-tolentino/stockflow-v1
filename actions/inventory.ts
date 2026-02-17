@@ -4,18 +4,22 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-const supplierSchema = z.object({
+// Validation schema
+const inventoryItemSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  contact_person: z.string().optional().nullable(),
-  email: z.string().email("Invalid email address").optional().nullable(),
-  phone: z.string().optional().nullable(),
-  address: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
+  category_id: z.string().nullable(),
+  supplier_id: z.string().nullable(),
+  unit: z.string().min(1, "Unit is required"),
+  current_quantity: z.number().min(0, "Quantity must be 0 or greater"),
+  reorder_level: z.number().min(0, "Reorder level must be 0 or greater"),
+  unit_price: z.number().min(0, "Price must be 0 or greater"),
 });
 
-export type SupplierFormData = z.infer<typeof supplierSchema>;
+export type InventoryItemFormData = z.infer<typeof inventoryItemSchema>;
 
-// Server action to get all suppliers
-export async function getSuppliers() {
+// Server action to get all inventory items
+export async function getInventoryItems() {
   const supabase = await createClient();
 
   const {
@@ -27,8 +31,20 @@ export async function getSuppliers() {
   }
 
   const { data, error } = await supabase
-    .from("suppliers")
-    .select("*")
+    .from("inventory_items")
+    .select(
+      `
+      *,
+      categories:category_id (
+        id,
+        name
+      ),
+      suppliers:supplier_id (
+        id,
+        name
+      )
+    `,
+    )
     .eq("user_id", user.id)
     .order("name");
 
@@ -39,8 +55,8 @@ export async function getSuppliers() {
   return { data, error: null };
 }
 
-// Server action to get a single supplier
-export async function getSupplier(id: string) {
+// Server action to get a single inventory item
+export async function getInventoryItem(id: string) {
   const supabase = await createClient();
 
   const {
@@ -52,8 +68,20 @@ export async function getSupplier(id: string) {
   }
 
   const { data, error } = await supabase
-    .from("suppliers")
-    .select("*")
+    .from("inventory_items")
+    .select(
+      `
+      *,
+      categories:category_id (
+        id,
+        name
+      ),
+      suppliers:supplier_id (
+        id,
+        name
+      )
+    `,
+    )
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
@@ -65,28 +93,8 @@ export async function getSupplier(id: string) {
   return { data, error: null };
 }
 
-export async function createSupplierInstant(name: string) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("suppliers")
-    .insert([{ name, user_id: user.id }])
-    .select()
-    .single();
-
-  if (error) throw new Error(error.message);
-
-  revalidatePath("/dashboard/inventory");
-  return data;
-}
-
-// Server action to create a supplier
-export async function createSupplier(formData: SupplierFormData) {
+// Server action to create an inventory item
+export async function createInventoryItem(formData: InventoryItemFormData) {
   try {
     const supabase = await createClient();
 
@@ -102,9 +110,9 @@ export async function createSupplier(formData: SupplierFormData) {
     }
 
     // Validate the form data
-    const validatedData = supplierSchema.parse(formData);
+    const validatedData = inventoryItemSchema.parse(formData);
 
-    const { error } = await supabase.from("suppliers").insert([
+    const { error } = await supabase.from("inventory_items").insert([
       {
         ...validatedData,
         user_id: user.id,
@@ -119,7 +127,9 @@ export async function createSupplier(formData: SupplierFormData) {
     }
 
     // Revalidate relevant paths
-    revalidatePath("/dashboard/suppliers");
+    revalidatePath("/dashboard/inventory");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/reports");
 
     return {
       success: true,
@@ -133,16 +143,19 @@ export async function createSupplier(formData: SupplierFormData) {
       };
     }
 
-    console.error("Supplier creation error:", error);
+    console.error("Inventory item creation error:", error);
     return {
       success: false,
-      error: "Failed to create supplier",
+      error: "Failed to create inventory item",
     };
   }
 }
 
-// Server action to update a supplier
-export async function updateSupplier(id: string, formData: SupplierFormData) {
+// Server action to update an inventory item
+export async function updateInventoryItem(
+  id: string,
+  formData: InventoryItemFormData,
+) {
   try {
     const supabase = await createClient();
 
@@ -158,10 +171,10 @@ export async function updateSupplier(id: string, formData: SupplierFormData) {
     }
 
     // Validate the form data
-    const validatedData = supplierSchema.parse(formData);
+    const validatedData = inventoryItemSchema.parse(formData);
 
     const { error } = await supabase
-      .from("suppliers")
+      .from("inventory_items")
       .update({
         ...validatedData,
         updated_at: new Date().toISOString(),
@@ -177,7 +190,9 @@ export async function updateSupplier(id: string, formData: SupplierFormData) {
     }
 
     // Revalidate relevant paths
-    revalidatePath("/dashboard/suppliers");
+    revalidatePath("/dashboard/inventory");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/reports");
 
     return {
       success: true,
@@ -191,16 +206,16 @@ export async function updateSupplier(id: string, formData: SupplierFormData) {
       };
     }
 
-    console.error("Supplier update error:", error);
+    console.error("Inventory item update error:", error);
     return {
       success: false,
-      error: "Failed to update supplier",
+      error: "Failed to update inventory item",
     };
   }
 }
 
-// Server action to delete a supplier
-export async function deleteSupplier(id: string) {
+// Server action to delete an inventory item
+export async function deleteInventoryItem(id: string) {
   try {
     const supabase = await createClient();
 
@@ -215,8 +230,30 @@ export async function deleteSupplier(id: string) {
       };
     }
 
+    // First check if item has any movements
+    const { data: movements, error: checkError } = await supabase
+      .from("stock_movements")
+      .select("id")
+      .eq("item_id", id)
+      .limit(1);
+
+    if (checkError) {
+      return {
+        success: false,
+        error: checkError.message,
+      };
+    }
+
+    if (movements && movements.length > 0) {
+      return {
+        success: false,
+        error:
+          "Cannot delete item that has stock movements. Please delete the movements first.",
+      };
+    }
+
     const { error } = await supabase
-      .from("suppliers")
+      .from("inventory_items")
       .delete()
       .eq("id", id)
       .eq("user_id", user.id);
@@ -229,17 +266,19 @@ export async function deleteSupplier(id: string) {
     }
 
     // Revalidate relevant paths
-    revalidatePath("/dashboard/suppliers");
+    revalidatePath("/dashboard/inventory");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/reports");
 
     return {
       success: true,
       error: null,
     };
   } catch (error) {
-    console.error("Supplier deletion error:", error);
+    console.error("Inventory item deletion error:", error);
     return {
       success: false,
-      error: "Failed to delete supplier",
+      error: "Failed to delete inventory item",
     };
   }
 }

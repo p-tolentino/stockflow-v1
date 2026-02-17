@@ -1,10 +1,10 @@
 // app/dashboard/inventory/inventory-client.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InventoryTable } from "@/components/inventory/inventory-table";
 import { InventoryFilter } from "@/components/inventory/inventory-filter";
-import { createClient } from "@/lib/supabase/client";
+import { useInventoryItems } from "@/hooks/useInventory";
 
 interface InventoryItem {
   id: string;
@@ -31,37 +31,16 @@ export function InventoryClient({
   categories,
   suppliers,
 }: InventoryClientProps) {
-  const [items, setItems] = useState(initialItems);
   const [filteredItems, setFilteredItems] = useState(initialItems);
-  const [loading, setLoading] = useState(false);
-  const supabase = createClient();
 
-  // Fetch items function to refresh data
-  const fetchItems = async () => {
-    setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
+  const { items: swrItems, refetch } = useInventoryItems();
 
-    const { data } = await supabase
-      .from("inventory_items")
-      .select(
-        `
-        *,
-        categories ( name ),
-        suppliers ( name )
-      `,
-      )
-      .eq("user_id", user.id)
-      .order("name");
+  // Use SWR data when available, fallback to initialItems
+  const items = swrItems.length > 0 ? swrItems : initialItems;
 
-    if (data) {
-      setItems(data);
-      setFilteredItems(data);
-    }
-    setLoading(false);
-  };
+  useEffect(() => {
+    setFilteredItems(items);
+  }, [items]);
 
   // Handle filter changes with immediate update
   const handleFilterChange = (filtered: InventoryItem[]) => {
@@ -126,14 +105,11 @@ export function InventoryClient({
         <p className="text-sm text-amber-600 dark:text-amber-400">
           Showing {filteredItems.length} of {items.length} items
         </p>
-        {loading && (
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-700"></div>
-        )}
       </div>
 
       <InventoryTable
         items={filteredItems}
-        onItemChange={fetchItems}
+        onItemChange={refetch}
         categories={categories}
         suppliers={suppliers}
       />

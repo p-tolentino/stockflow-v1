@@ -229,8 +229,7 @@ export function ReportExportButtons({ data }: ReportExportButtonsProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
-          className="border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300"
+          className="border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 h-full"
         >
           <Download className="h-4 w-4 mr-2" />
           Export

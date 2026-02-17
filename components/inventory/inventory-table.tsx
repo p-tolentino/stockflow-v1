@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Edit, Trash, Package } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +27,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { getStockStatus, getStockStatusColor } from "@/lib/stock-utils";
 import { InventoryDialog } from "./inventory-form";
+import { deleteInventoryItem } from "@/actions/inventory";
+import { useInventoryItems } from "@/hooks/useInventory";
 
 interface InventoryItem {
   id: string;
@@ -56,25 +57,22 @@ export function InventoryTable({
   categories,
   suppliers,
 }: InventoryTableProps) {
-  const router = useRouter();
-  const supabase = createClient();
+  const { refetch } = useInventoryItems();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase
-      .from("inventory_items")
-      .delete()
-      .eq("id", id);
+    const result = await deleteInventoryItem(id);
 
-    if (error) {
-      toast.error("Error", { description: error.message });
+    if (result.error) {
+      toast.error("Error", { description: result.error });
     } else {
       toast.success("Success", { description: "Item deleted" });
+      // Refresh SWR cache
+      await refetch();
       // Call the refresh callback if provided
       if (onItemChange) {
         onItemChange();
       }
-      router.refresh();
     }
     setDeleteId(null);
   };

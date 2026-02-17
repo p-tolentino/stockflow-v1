@@ -26,6 +26,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { SupplierDialog } from "./supplier-form";
+import { deleteSupplier } from "@/actions/suppliers";
 
 interface Supplier {
   id: string;
@@ -42,10 +43,10 @@ export function SuppliersTable({ suppliers }: { suppliers: Supplier[] }) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("suppliers").delete().eq("id", id);
+    const { error } = await deleteSupplier(id);
     if (error) {
       toast.error("Error", {
-        description: error.message,
+        description: error,
       });
     } else {
       toast.success("Success", { description: "Supplier deleted" });
@@ -146,7 +147,7 @@ export function SuppliersTable({ suppliers }: { suppliers: Supplier[] }) {
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => handleDelete(supplier.id)}
-                        className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+                        className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white"
                       >
                         Delete
                       </AlertDialogAction>

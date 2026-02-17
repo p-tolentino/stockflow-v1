@@ -271,7 +271,7 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row justify-between gap-4">
         <h1 className="text-3xl font-bold text-amber-900 dark:text-amber-100">
           Dashboard
         </h1>
@@ -279,24 +279,24 @@ export default async function DashboardPage({
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Items Card */}
         <Card className="border-amber-200 dark:border-amber-800 bg-linear-to-br from-amber-50 to-white dark:from-amber-950/50 dark:to-slate-900 transition-all hover:shadow-lg hover:scale-[1.02]">
-          <CardContent className="px-6 py-2">
+          <CardContent className="p-4 sm:px-6 sm:py-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
                   Total Items
                 </p>
-                <p className="text-3xl font-bold mt-2 text-amber-900 dark:text-amber-100">
+                <p className="text-xl sm:text-3xl font-bold mt-1 sm:mt-2 text-amber-900 dark:text-amber-100">
                   {totalItems}
                 </p>
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 mt-0.5 sm:mt-1">
                   Current inventory
                 </p>
               </div>
-              <div className="p-3 bg-linear-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg shadow-amber-500/30">
-                <Package className="h-6 w-6 text-white" />
+              <div className="p-2 sm:p-3 bg-linear-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg shadow-amber-500/30">
+                <Package className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
               </div>
             </div>
           </CardContent>
@@ -312,14 +312,14 @@ export default async function DashboardPage({
                 : "border-green-200 dark:border-green-800 bg-linear-to-br from-green-50 dark:from-green-950/50"
           } to-white dark:to-slate-900 transition-all hover:shadow-lg hover:scale-[1.02]`}
         >
-          <CardContent className="px-6 py-2">
+          <CardContent className="p-4 sm:px-6 sm:py-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                  Low Stock Items
+                <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                  Low Stock
                 </p>
                 <p
-                  className={`text-3xl font-bold mt-2 ${
+                  className={`text-xl sm:text-3xl font-bold mt-1 sm:mt-2 ${
                     lowStockStatus === "critical"
                       ? "text-red-700 dark:text-red-400"
                       : lowStockStatus === "low"
@@ -329,23 +329,23 @@ export default async function DashboardPage({
                 >
                   {lowStockCount}
                 </p>
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 mt-0.5 sm:mt-1">
                   Need attention
                 </p>
               </div>
               {lowStockCount === 0 ? (
-                <div className="p-3 bg-linear-to-br from-green-500 to-green-600 rounded-lg shadow-lg shadow-green-500/30">
-                  <CircleCheckBig className="h-6 w-6 text-white" />
+                <div className="p-2 sm:p-3 bg-linear-to-br from-green-500 to-green-600 rounded-lg shadow-lg shadow-green-500/30">
+                  <CircleCheckBig className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </div>
               ) : (
                 <div
-                  className={`p-3 rounded-lg shadow-lg ${
+                  className={`p-2 sm:p-3 rounded-lg shadow-lg ${
                     lowStockStatus === "critical"
                       ? "bg-linear-to-br from-red-500 to-red-600 shadow-red-500/30"
                       : "bg-linear-to-br from-amber-500 to-orange-600 shadow-amber-500/30"
                   }`}
                 >
-                  <AlertTriangle className="h-6 w-6 text-white" />
+                  <AlertTriangle className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </div>
               )}
             </div>
@@ -354,21 +354,21 @@ export default async function DashboardPage({
 
         {/* Stock Movements Card */}
         <Card className="border-amber-200 dark:border-amber-800 bg-linear-to-br from-amber-50 to-white dark:from-amber-950/50 dark:to-slate-900 transition-all hover:shadow-lg hover:scale-[1.02]">
-          <CardContent className="px-6 py-2">
+          <CardContent className="p-4 sm:px-6 sm:py-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
-                  Stock Movements
+                <p className="text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+                  Movements
                 </p>
-                <p className="text-3xl font-bold mt-2 text-amber-900 dark:text-amber-100">
+                <p className="text-xl sm:text-3xl font-bold mt-1 sm:mt-2 text-amber-900 dark:text-amber-100">
                   {intervalMovementsCount}
                 </p>
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                  {periodText} • Total: {totalMovementsCount ?? 0} all time
+                <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 mt-0.5 sm:mt-1">
+                  {periodText}
                 </p>
               </div>
-              <div className="p-3 bg-linear-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg shadow-amber-500/30">
-                <Repeat className="h-6 w-6 text-white" />
+              <div className="p-2 sm:p-3 bg-linear-to-br from-amber-500 to-orange-600 rounded-lg shadow-lg shadow-amber-500/30">
+                <Repeat className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
               </div>
             </div>
           </CardContent>
@@ -384,14 +384,14 @@ export default async function DashboardPage({
                 : "border-amber-200 dark:border-amber-800 bg-linear-to-br from-amber-50 dark:from-amber-950/50"
           } to-white dark:to-slate-900 transition-all hover:shadow-lg hover:scale-[1.02]`}
         >
-          <CardContent className="px-6 py-2">
+          <CardContent className="p-4 sm:px-6 sm:py-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                   Value Moved
                 </p>
                 <p
-                  className={`text-3xl font-bold mt-2 ${
+                  className={`text-xl sm:text-3xl font-bold mt-1 sm:mt-2 ${
                     intervalValueMoved > 0
                       ? "text-green-700 dark:text-green-400"
                       : intervalValueMoved < 0
@@ -401,12 +401,12 @@ export default async function DashboardPage({
                 >
                   ${intervalValueMoved.toFixed(2)}
                 </p>
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                  {periodText} • Current: ${totalValue.toFixed(2)}
+                <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 mt-0.5 sm:mt-1">
+                  {periodText}
                 </p>
               </div>
               <div
-                className={`p-3 rounded-lg shadow-lg ${
+                className={`p-2 sm:p-3 rounded-lg shadow-lg ${
                   intervalValueMoved > 0
                     ? "bg-linear-to-br from-green-500 to-green-600 shadow-green-500/30"
                     : intervalValueMoved < 0
@@ -414,7 +414,7 @@ export default async function DashboardPage({
                       : "bg-linear-to-br from-amber-500 to-orange-600 shadow-amber-500/30"
                 }`}
               >
-                <DollarSign className="h-6 w-6 text-white" />
+                <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
               </div>
             </div>
           </CardContent>

@@ -4,8 +4,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { MovementsTable } from "@/components/movements/movements-table";
-import { MovementDialog } from "@/components/movements/movement-form.tsx";
 import { MovementsFilter } from "@/components/movements/movements-filter";
+import { MovementDialog } from "./movement-form";
+import { useMovements } from "@/hooks/useMovements";
 
 interface Movement {
   id: string;
@@ -23,10 +24,10 @@ interface MovementsClientProps {
 export default function MovementsClient({
   initialMovements,
 }: MovementsClientProps) {
-  const [movements] = useState(initialMovements);
   const [filteredMovements, setFilteredMovements] = useState(initialMovements);
+  const { movements, refetch } = useMovements();
 
-  const handleFilterChange = (filtered: Movement[]) => {
+  const handleFilterChange = async (filtered: Movement[]) => {
     setFilteredMovements(filtered);
   };
 
@@ -41,7 +42,7 @@ export default function MovementsClient({
             Track all inventory changes and adjustments
           </p>
         </div>
-        <MovementDialog>
+        <MovementDialog onSuccess={refetch}>
           <Button className="bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transition-all">
             <Plus className="mr-2 h-4 w-4" /> Record Movement
           </Button>

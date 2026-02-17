@@ -61,7 +61,7 @@ export default async function ReportsPage({
 }) {
   const supabase = await createClient();
   const params = await searchParams;
-  const period = params.period || "30days";
+  const period = params.period || "7days";
 
   const {
     data: { user },
@@ -241,7 +241,7 @@ export default async function ReportsPage({
       {/* Summary Cards - 2x2 grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-amber-200 dark:border-amber-800">
-          <CardContent className="p-4 sm:p-6">
+          <CardContent className="p-4 sm:px-6 sm:py-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
@@ -259,7 +259,7 @@ export default async function ReportsPage({
         </Card>
 
         <Card className="border-green-200 dark:border-green-800">
-          <CardContent className="p-4 sm:p-6">
+          <CardContent className="p-4 sm:px-6 sm:py-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs sm:text-sm font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide">
@@ -277,7 +277,7 @@ export default async function ReportsPage({
         </Card>
 
         <Card className="border-red-200 dark:border-red-800">
-          <CardContent className="p-4 sm:p-6">
+          <CardContent className="p-4 sm:px-6 sm:py-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs sm:text-sm font-semibold text-red-700 dark:text-red-400 uppercase tracking-wide">
@@ -295,7 +295,7 @@ export default async function ReportsPage({
         </Card>
 
         <Card className="border-amber-200 dark:border-amber-800">
-          <CardContent className="p-4 sm:p-6">
+          <CardContent className="p-4 sm:px-6 sm:py-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">

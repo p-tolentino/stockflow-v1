@@ -16,7 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { createCategory } from "@/actions/categories";
+import { createCategoryInstant } from "@/actions/categories";
 import { toast } from "sonner";
 
 interface CategoryComboboxProps {
@@ -44,7 +44,7 @@ export function CategoryCombobox({
     if (!search.trim()) return;
     setLoading(true);
     try {
-      const newCategory = await createCategory(search.trim());
+      const newCategory = await createCategoryInstant(search.trim());
       toast.success("Success", { description: "Category created" });
       onChange(newCategory.id);
       setOpen(false);

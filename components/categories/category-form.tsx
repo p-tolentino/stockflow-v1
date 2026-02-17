@@ -23,7 +23,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { createClient } from "@/lib/supabase/client";
+import { createCategory, updateCategory } from "@/actions/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { toast } from "sonner";
 
 const formSchema = z.object({
@@ -42,7 +43,7 @@ export function CategoryDialog({ children, initialData }: CategoryDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  const { refetch } = useCategories();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -54,40 +55,32 @@ export function CategoryDialog({ children, initialData }: CategoryDialogProps) {
 
   const onSubmit = async (values: FormValues) => {
     setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
 
+    let result;
     if (initialData?.id) {
       // Update
-      const { error } = await supabase
-        .from("categories")
-        .update({ ...values, updated_at: new Date().toISOString() })
-        .eq("id", initialData.id);
-      if (error) {
-        toast.error("Error", {
-          description: error.message,
-        });
-      } else {
-        toast.success("Success", { description: "Category updated" });
-        setOpen(false);
-        router.refresh();
-      }
+      result = await updateCategory(initialData.id, values);
     } else {
-      // Insert
-      const { error } = await supabase
-        .from("categories")
-        .insert([{ ...values, user_id: user.id }]);
-      if (error) {
-        toast.error("Error", {
-          description: error.message,
-        });
-      } else {
-        toast.success("Success", { description: "Category created" });
-        setOpen(false);
-        router.refresh();
-      }
+      // Create
+      result = await createCategory(values);
+    }
+
+    if (result.success) {
+      toast.success("Success", {
+        description: initialData?.id ? "Category updated" : "Category created",
+      });
+      setOpen(false);
+      form.reset();
+
+      // Refresh SWR cache
+      await refetch();
+
+      // Refresh Next.js router cache
+      router.refresh();
+    } else {
+      toast.error("Error", {
+        description: result.error,
+      });
     }
 
     setLoading(false);

@@ -16,7 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { createSupplier } from "@/actions/suppliers";
+import { createSupplierInstant } from "@/actions/suppliers";
 import { toast } from "sonner";
 
 interface SupplierComboboxProps {
@@ -44,7 +44,7 @@ export function SupplierCombobox({
     if (!search.trim()) return;
     setLoading(true);
     try {
-      const newSupplier = await createSupplier(search.trim());
+      const newSupplier = await createSupplierInstant(search.trim());
       toast.success("Success", { description: "Supplier created" });
       onChange(newSupplier.id);
       setOpen(false);

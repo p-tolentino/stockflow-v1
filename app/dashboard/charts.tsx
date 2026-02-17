@@ -128,8 +128,8 @@ export function InventoryValueChart({ data, title, interval }: AreaChartProps) {
             <Area
               dataKey="value"
               type="monotone"
-              stroke="var(--color-value)"
-              fill="var(--color-value)"
+              stroke="#cc5500"
+              fill="#f4ab6a"
               fillOpacity={0.4}
               strokeWidth={1.5}
               activeDot={{ r: 4 }}
